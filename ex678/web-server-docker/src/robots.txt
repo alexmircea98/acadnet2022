@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /package.json
+Disallow: /server.js
+Disallow: /views/
+

@@ -1,0 +1,9 @@
+CTF_ACAD{mesaj_super_secret}
+
+PGS_NPNQ{zrfnw_fhcre_frperg} after rot13
+
+UEdTX05QTlF7enJmbndfZmhjcmVfZnJwZXJnfQ==
+
+
+
+(5, 'badwoop', 'CTF_ACAD{you_cannot_find_me}', 'badrabbit');

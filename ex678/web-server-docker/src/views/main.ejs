@@ -1,0 +1,35 @@
+<% var title = '[SuperSecret] Carrotbook - Login' %>
+<% include header %>
+
+<div id="mainframe">
+  <h1>BadBunny's HQ</h1>
+
+  <p>Welcome, <b><%- user.fullname %></b>! <a href="/logout">[Logout]</a><br><a href="/journal/profile">[Profile]</a></p>
+
+  <%- message %>
+  <h2>Post new message:</h2>
+  <form method="post" action="/journal/post">
+    <p>
+      <div><label for="message">Message:</label></div>
+      <textarea id="message" name="message" rows="3" cols="80"></textarea>
+    </p>
+    <p>
+      <input type="submit" value="Send">
+    </p>
+  </form>
+
+  <h2>Message Board:</h2>
+
+  <% for (var i=0; i<entries.length; i++) { %>
+  <div class="entry" id="post-<%= entries[i].id %>">
+      <div class="entry-date"><%= entries[i].date.toISOString().
+        replace(/T/, ' ').      // replace T with a space
+        replace(/\..+/, '') %></div>
+        <div class="entry-name"><%= entries[i].name %></div>
+      <div class="entry-message"><%- entries[i].message %></div>
+  </div>
+  <% } %>
+
+</div>
+
+<% include footer %>

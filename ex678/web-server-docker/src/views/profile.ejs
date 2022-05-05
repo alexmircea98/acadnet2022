@@ -1,0 +1,17 @@
+<% var title = '[SuperSecret] Carrotbook - Login' %>
+<% include header %>
+
+<div id="mainframe">
+  <h1>BadBunny's HQ</h1>
+
+  <p>Welcome, <b><%- user.fullname %></b>! <a href="/logout">[Logout]</a><br><a href="/journal">[Jurnal]</a></p>
+
+  <%- message %>
+  <h2>Profil:</h2>
+  <p>Name: <%- user.fullname %></p>
+  <p>Username: <%- user.name %></p>
+  <p>Parola: <%- user.password %></p>
+
+</div>
+
+<% include footer %>

