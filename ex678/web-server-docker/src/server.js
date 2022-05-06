@@ -18,7 +18,18 @@ var db = mysql.createConnection({
   password : 'secretpasswordlab08-1337',
   database : 'journalapp'
 });
-db.connect(runServer);
+
+function delay(time) {
+  return new Promise(resolve => setTimeout(resolve, time));
+} 
+
+waitDB();
+
+async function waitDB() {
+  await delay(20000);
+  db.connect(runServer);
+  console.log('Done waiting');
+}
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(session({
@@ -141,7 +152,7 @@ app.post('/journal/post', function(req, res) {
 
 app.use(express.static(__dirname));
 
-function runServer(error) {
+async function runServer(error) {
   if (error) {
     console.error('Error connecting to MySQL database: ' + error.stack);
     console.log('Please try again!');
