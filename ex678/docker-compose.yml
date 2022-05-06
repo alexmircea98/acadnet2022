@@ -1,0 +1,22 @@
+version: "3.7"
+
+services:
+
+  mysql:
+    image: acadnet-mysql
+    container_name: mysql
+
+  web:
+    image: acadnet-web-server
+    container_name: web
+    ports:
+      - "8080:8080"
+
+  server:
+    image: acadnet-server
+    container_name: server
+    ports:
+      - "1337:22"
+
+networks:
+  default:

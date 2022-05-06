@@ -1,0 +1,12 @@
+CTF_ACAD{We_have_always_defined_ourselves_by_the_ability_to_overcome_the_impossible_or_this}
+
+PGS_NPNQ{Jr_unir_nyjnlf_qrsvarq_bhefryirf_ol_gur_novyvgl_gb_birepbzr_gur_vzcbffvoyr_be_guvf} after rot13
+
+UEdTX05QTlF7SnJfdW5pcl9ueWpubGZfcXJzdmFycV9iaGVmcnlpcmZfb2xfZ3VyX25vdnl2Z2xfZ2JfYmlyZXBienJfZ3VyX3Z6Y2JmZnZveXJfYmVfZ3V2Zn0= - base64
+
+
+
+(5, 'badwoop', 'CTF_ACAD{you_cannot_find_me}', 'badrabbit');
+
+
+ find / -perm /4000 2>/dev/null
